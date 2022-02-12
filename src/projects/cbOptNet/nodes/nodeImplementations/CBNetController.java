@@ -2,6 +2,7 @@ package projects.cbOptNet.nodes.nodeImplementations;
 
 import java.util.ArrayList;
 
+import projects.cbOptNet.nodes.infrastructureImplementations.WeightTree;
 import projects.opticalNet.nodes.messages.HasMessage;
 import projects.opticalNet.nodes.messages.NewMessage;
 import projects.opticalNet.nodes.messages.OpticalNetMessage;
@@ -23,6 +24,8 @@ import sinalgo.tools.Tools;
  * This class implements the blunt of the CBNet algortithm over the OpticalNet framework.
  */
 public class CBNetController extends NetworkController {
+    private WeightTree weightTree;
+
     private boolean seq = true;
     private double epsilon = -1.5;
 
@@ -34,7 +37,7 @@ public class CBNetController extends NetworkController {
      * @param netNodes      Array with the initialized NetworkNodes
      */
     public CBNetController (int numNodes, int switchSize, ArrayList<NetworkNode> netNodes) {
-        super(numNodes, switchSize, netNodes);
+        this(numNodes, switchSize, netNodes, new ArrayList<Integer>());
     }
 
     /**
@@ -50,6 +53,7 @@ public class CBNetController extends NetworkController {
         int numNodes, int switchSize, ArrayList<NetworkNode> netNodes, ArrayList<Integer> edgeList
     ) {
         super(numNodes, switchSize, netNodes, edgeList);
+        weightTree = new WeightTree(numNodes);
     }
 
     @Override
@@ -69,15 +73,10 @@ public class CBNetController extends NetworkController {
         InfraNode y = x.getParent();
         InfraNode z = y.getParent();
 
-        boolean leftZigZig = (y == z.getLeftChild());
-        InfraNode c = (leftZigZig ? y.getRightChild() : y.getLeftChild());
-
         double deltaRank = this.zigDiffRank(y, z);
-
         if (deltaRank < this.epsilon && super.zigZigBottomUp(x)) {
-            this.zigZigWeightUpdate(y, z, c);
-
             return true;
+
         }
 
         return false;
@@ -93,16 +92,10 @@ public class CBNetController extends NetworkController {
         InfraNode y = x.getParent();
         InfraNode z = y.getParent();
 
-        boolean leftZigZag = (y == z.getLeftChild());
-        InfraNode b = (leftZigZag) ? x.getLeftChild() : x.getRightChild();
-        InfraNode c = (leftZigZag) ? x.getRightChild() : x.getLeftChild();
-
         double deltaRank = this.zigZagDiffRank(x, y, z);
-
         if (deltaRank < this.epsilon && super.zigZagBottomUp(x)) {
-            this.zigZagWeightUpdate(x, y, z, b, c);
-
             return true;
+
         }
 
         return false;
@@ -116,14 +109,11 @@ public class CBNetController extends NetworkController {
     @Override
     protected boolean zigZigLeftTopDown (InfraNode z) {
         InfraNode y = z.getLeftChild();
-        InfraNode c = y.getRightChild();
 
         double deltaRank = this.zigDiffRank(y, z);
-
         if (deltaRank < this.epsilon && super.zigZigLeftTopDown(z)) {
-            this.zigZigWeightUpdate(y, z, c);
-
             return true;
+
         }
 
         return false;
@@ -137,14 +127,11 @@ public class CBNetController extends NetworkController {
     @Override
     protected boolean zigZigRightTopDown (InfraNode z) {
         InfraNode y = z.getRightChild();
-        InfraNode c = y.getLeftChild();
 
         double deltaRank = this.zigDiffRank(y, z);
-
         if (deltaRank < this.epsilon && super.zigZigRightTopDown(z)) {
-            this.zigZigWeightUpdate(y, z, c);
-
             return true;
+
         }
 
         return false;
@@ -159,15 +146,11 @@ public class CBNetController extends NetworkController {
     protected boolean zigZagLeftTopDown (InfraNode z) {
         InfraNode y = z.getLeftChild();
         InfraNode x = y.getRightChild();
-        InfraNode b = x.getLeftChild();
-        InfraNode c = x.getRightChild();
 
         double deltaRank = this.zigZagDiffRank(x, y, z);
-
         if (deltaRank < this.epsilon && super.zigZagLeftTopDown(z)) {
-            this.zigZagWeightUpdate(x, y, z, b, c);
-
             return true;
+
         }
 
         return false;
@@ -182,71 +165,14 @@ public class CBNetController extends NetworkController {
     protected boolean zigZagRightTopDown (InfraNode z) {
         InfraNode y = z.getRightChild();
         InfraNode x = y.getLeftChild();
-        InfraNode b = x.getRightChild();
-        InfraNode c = x.getLeftChild();
 
         double deltaRank = this.zigZagDiffRank(x, y, z);
-
         if (deltaRank < this.epsilon && super.zigZagRightTopDown(z)) {
-            this.zigZagWeightUpdate(x, y, z, b, c);
-
             return true;
+
         }
 
         return false;
-    }
-
-    /**
-     * This function updates the the weigth of the y and z's subtree, after one
-     * zig-zig rotation. Recalculating y's weigth with z as it's child, and z's
-     * weigth with c as it's child
-     * @param y initial parent of the x node in zig-zig rotation
-     * @param z initial parent of the y node in zig-zig rotation
-     * @param c initial child of x in zig-zig operation
-     */
-    private void zigZigWeightUpdate (InfraNode y, InfraNode z, InfraNode c) {
-        long yOldWeight = y.getWeight();
-        long zOldWeight = z.getWeight();
-
-        long cWeight = (c.getId() != -1) ? c.getWeight() : 0;
-
-        long zNewWeight = zOldWeight - yOldWeight + cWeight;
-        long yNewWeight = yOldWeight - cWeight + zNewWeight;
-
-        z.setWeight(zNewWeight);
-        y.setWeight(yNewWeight);
-
-    }
-
-    /**
-     * This function updates the the weigth of the x, y and z's subtree, after one
-     * zig-zag rotation. Recalculating y's weigth with b as it's child in the place of x,
-     * and z's weigth with c as it's child in the place of y, and x as the parent of both
-     * y and z.
-     * @param x reference node in zig-zag rotation
-     * @param y initial parent of the x node in zig-zag rotation
-     * @param z initial parent of the y node in zig-zag rotation
-     * @param b initial child of x in zig-zag operation
-     * @param c initial child of x in zig-zag operation
-     */
-    private void zigZagWeightUpdate (
-        InfraNode x, InfraNode y, InfraNode z, InfraNode b, InfraNode c
-    ) {
-        long xOldWeight = x.getWeight();
-        long yOldWeight = y.getWeight();
-        long zOldWeight = z.getWeight();
-
-        long bWeight = (b.getId() != -1) ? b.getWeight() : 0;
-        long cWeight = (c.getId() != -1) ? c.getWeight() : 0;
-
-        long yNewWeight = yOldWeight - xOldWeight + bWeight;
-        long zNewWeight = zOldWeight - yOldWeight + cWeight;
-        long xNewWeight = xOldWeight - bWeight - cWeight + yNewWeight + zNewWeight;
-
-        y.setWeight(yNewWeight);
-        z.setWeight(zNewWeight);
-        x.setWeight(xNewWeight);
-
     }
     /* End of Rotations */
 
@@ -264,29 +190,27 @@ public class CBNetController extends NetworkController {
     /**
      * Compute the difference in rank between the current network topology
      * and the network topology after realizing a zig-zig rotation
-     * @param x     the reference node
      * @param y     x parent node
+     * @param z     y parent node
      * @return      (double) the difference in rank
      */
-    private double zigDiffRank (InfraNode x, InfraNode y) {
-        boolean leftZig = (x == y.getLeftChild());
+    private double zigDiffRank (InfraNode y, InfraNode z) {
+        boolean leftZigZig = (y == z.getLeftChild());
 
-        InfraNode b = (leftZig) ? x.getRightChild() : x.getLeftChild();
+        InfraNode c = (leftZigZig) ? y.getRightChild() : y.getLeftChild();
 
-        long xOldWeight = x.getWeight();
-        long yOldWeight = y.getWeight();
+        long yOldWeight = this.weightTree.getWeight(y);
+        long zOldWeight = this.weightTree.getWeight(z);
 
-        long bWeight = (b.getId() != -1) ? b.getWeight() : 0;
+        long zNewWeight = this.weightTree.getNewWeight(z, c, leftZigZig);
+        long yNewWeight = this.weightTree.getNewWeight(y, z, !leftZigZig);
 
-        long yNewWeight = yOldWeight - xOldWeight + bWeight;
-        long xNewWeight = xOldWeight - bWeight + yNewWeight;
-
-        double xOldRank = log2(xOldWeight);
         double yOldRank = log2(yOldWeight);
-        double xNewRank = log2(xNewWeight);
+        double zOldRank = log2(zOldWeight);
         double yNewRank = log2(yNewWeight);
+        double zNewRank = log2(zNewWeight);
 
-        double deltaRank = yNewRank + xNewRank - yOldRank - xOldRank;
+        double deltaRank = zNewRank + yNewRank - zOldRank - yOldRank;
 
         return deltaRank;
     }
@@ -300,21 +224,18 @@ public class CBNetController extends NetworkController {
      * @return      (double) the difference in rank
      */
     private double zigZagDiffRank (InfraNode x, InfraNode y, InfraNode z) {
-        boolean lefZigZag = (y == z.getLeftChild());
+        boolean leftZigZag = (y == z.getLeftChild());
 
-        InfraNode b = lefZigZag ? x.getLeftChild() : x.getRightChild();
-        InfraNode c = lefZigZag ? x.getRightChild() : x.getLeftChild();
+        InfraNode b = leftZigZag ? x.getLeftChild() : x.getRightChild();
+        InfraNode c = leftZigZag ? x.getRightChild() : x.getLeftChild();
 
-        long xOldWeight = x.getWeight();
-        long yOldWeight = y.getWeight();
-        long zOldWeight = z.getWeight();
+        long xOldWeight = this.weightTree.getWeight(x);
+        long yOldWeight = this.weightTree.getWeight(y);
+        long zOldWeight = this.weightTree.getWeight(z);
 
-        long bWeight = b.getWeight();
-        long cWeight = c.getWeight();
-
-        long yNewWeight = yOldWeight - xOldWeight + bWeight;
-        long zNewWeight = zOldWeight - yOldWeight + cWeight;
-        long xNewWeight = xOldWeight - bWeight - cWeight + yNewWeight + zNewWeight;
+        long yNewWeight = this.weightTree.getNewWeight(y, b, !leftZigZag);
+        long zNewWeight = this.weightTree.getNewWeight(z, c, leftZigZag);
+        long xNewWeight = this.weightTree.getOccurrences(x) + yNewWeight + zNewWeight;
 
         double xOldRank = log2(xOldWeight);
         double yOldRank = log2(yOldWeight);
@@ -428,21 +349,6 @@ public class CBNetController extends NetworkController {
     }
 
     /**
-     * Increments the weigth over the path between the src and dst node. Even though this
-     * method is only called when the message reaches is destination, the weight updates after
-     * rotations make it so that the path, even if it's altered ends up with the same distribution
-     * of weigths as it would have if it wasn't altered.
-     * @param src   src node of the message
-     * @param dst   dst node of the message
-     */
-    private void incrementPathWeight (int src, int dst) {
-        InfraNode srcNode = this.getInfraNode(src);
-        InfraNode dstNode = this.getInfraNode(dst);
-
-        srcNode.incrementPathWeight(dstNode, false);
-    }
-
-    /**
      * This method handles the message a CBNetCOntroller receives. If it is a OpticalNetMessage,
      * it means that this message has reached it's destination, so the number of completed
      * messages is incremented, the LoggerLayer reports this message information and the weigth
@@ -461,7 +367,11 @@ public class CBNetController extends NetworkController {
                 this.logIncrementCompletedRequests();
                 this.logMessageRouting(optmsg.getRouting());
 
-                this.incrementPathWeight(optmsg.getSrc(), optmsg.getDst());
+                InfraNode srcNode = this.getInfraNode(optmsg.getSrc());
+                InfraNode dstNode = this.getInfraNode(optmsg.getDst());
+
+                this.weightTree.incrementWeight(srcNode);
+                this.weightTree.incrementWeight(dstNode);
 
                 this.cmpMsgs++;
                 this.seq = true;

@@ -17,8 +17,6 @@ public class InfraNode implements Comparable<InfraNode> {
     private int minId = -1;
     private int maxId = -1;
 
-    private long weight = 0;
-
     private int id = 0;
     private static int ID = 0;
     /* End of Attributes */
@@ -123,15 +121,6 @@ public class InfraNode implements Comparable<InfraNode> {
     public int getMaxId () {
         return this.maxId;
     }
-
-    /**
-     * Getter for this node weight. Obsolete with weight-tree.
-     * @return This node's weight
-     */
-    public long getWeight () {
-        return (this.getId() == -1 ? 0 : this.weight);
-    }
-
     /* End of Getters */
 
     /* Setters */
@@ -298,59 +287,6 @@ public class InfraNode implements Comparable<InfraNode> {
 
     }
 
-    /**
-     * Update this node weight, called after a rotation. Obsolete with weight-tree.
-     * @param weight This node new weight
-     */
-    public void setWeight (long weight) {
-        this.weight = weight;
-
-    }
-
-    /**
-     * Increment the weight of this node subtree. Obsolete with weight-tree.
-     */
-    public void incrementWeight () {
-        this.weight++;
-
-    }
-
-    /**
-     * Increment the weight of the nodes in the path between this node and the destination
-     * node, toNode. It traverse the path from the source node to the root and from the
-     * root to the destination node. Effectively adding 2 to every node ancestor to the LCA
-     * and adding one to every node ancestor to only one of the source and destination nodes.
-     * @param toNode    destination node
-     * @param rooted    boolean with true if it already has traversed to the root and false if
-     *                  it still hasn't
-     */
-    public void incrementPathWeight (InfraNode toNode, boolean rooted) {
-        this.incrementWeight();
-        Direction direction = this.getRoutingDirection(toNode);
-
-        if (!rooted && this.parent.getId() != -1) {
-            this.parent.incrementPathWeight(toNode, false);
-
-        } else if (this.getId() == toNode.getId()) {
-            return;
-
-        } else if (direction == Direction.RIGHT || direction == Direction.RIGHTROUT) {
-            this.rightChild.incrementPathWeight(toNode, true);
-
-        } else if (direction == Direction.LEFT || direction == Direction.LEFTROUT) {
-            this.leftChild.incrementPathWeight(toNode, true);
-
-        } else {
-            Tools.fatalError("Incrementing parent weigth after going to root");
-
-        }
-    }
-
-    /**
-     * Getter for the next node in the path between this node and the destination node.
-     * @param toNode    the destination node
-     * @return          the next node in the path.
-     */
     public InfraNode getRoutingNode (InfraNode toNode) {
         return this.getRoutingNode(this.getRoutingDirection(toNode));
 
