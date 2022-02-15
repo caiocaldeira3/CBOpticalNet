@@ -5,6 +5,11 @@ import java.util.Collections;
 
 import projects.opticalNet.nodes.models.InfraNode;
 
+/**
+ * The weight tree is a segtree representing the counters of each node in the base of the segtree
+ * and the weight of node based on the sum of the range between the minimum and maximum
+ * id of a node subtree.
+ */
 public class WeightTree {
 
     /* Attributes */
@@ -15,11 +20,20 @@ public class WeightTree {
 
     /* End of Attributes */
 
+    /**
+     * Constructor of the segtree, initializes all it's nodes with the counter equals to 0.
+     * @param numNodes  the number of nodes in the network
+     */
     public WeightTree (int numNodes) {
         this.size = numNodes;
         this.segTree = new ArrayList<>(Collections.nCopies(size * 2 + 1, 0));
     }
 
+    /**
+     * Getter for the weight of a InfraNode subtree.
+     * @param node  the InfraNode
+     * @return      the sum of counters in the range minId to maxId
+     */
     public int getWeight (InfraNode node) {
         int minId = node.getMinId();
         int maxId = node.getMaxId();
@@ -27,6 +41,13 @@ public class WeightTree {
         return this.query(minId, maxId);
     }
 
+    /**
+     * Getter for the new weight a InfraNode's subtree would hold if he had a different child
+     * @param node          the InfraNode
+     * @param newChild      the new child for node
+     * @param leftChild     true if the new child is a leftChild, important for dummy nodes
+     * @return              the sum of counters in the range minId to maxId
+     */
     public int getNewWeight (InfraNode node, InfraNode newChild, boolean leftChild) {
         int minId, maxId;
         if (leftChild) {
@@ -40,11 +61,23 @@ public class WeightTree {
         return this.query(minId, maxId);
     }
 
+    /**
+     * Getter for the number of occurences, where a node was source or destination of
+     * a message. Equals to the counter on the base of the segtree.
+     * @param node  the InfraNode
+     * @return      the counter value for node
+     */
     public int getOccurrences (InfraNode node) {
         return this.segTree.get(node.getId() + this.size);
 
     }
 
+    /**
+     * Returns the sum of counters between minId and maxId in O(logn)
+     * @param minId (int) minId in the subtree
+     * @param maxId (int) maxId in the subtree
+     * @return      the sum of counters in the range minId to maxId
+     */
     public int query (int minId, int maxId) {
         int weight = 0;
 
@@ -62,6 +95,10 @@ public class WeightTree {
         return weight;
     }
 
+    /**
+     * Increment the counter of InfraNode and propagate this change over the segtree.
+     * @param node  InfraNode
+     */
     public void incrementWeight (InfraNode node) {
         int nodeId = node.getId();
 

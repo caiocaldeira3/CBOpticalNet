@@ -30,7 +30,7 @@ public class CBNetController extends NetworkController {
     private double epsilon = -1.5;
 
     /**
-     * Initializes the CBNetController and makes a call for it's parent constructor.
+     * Initializes the CBNetController and makes a call for it's constructor with an edgeList.
      * This constructor builds the network as a balanced BST.
      * @param numNodes      Number of nodes in the network
      * @param switchSize    Number of input/output ports in the switch
@@ -41,9 +41,9 @@ public class CBNetController extends NetworkController {
     }
 
     /**
-     * Initializes the CBNetController and makes a call for it's parent constructor. If an
-     * edgeList is provided the tree topology follow the specified one. If the edge list
-     * can't build an BST, the constructor builds a balanced BST instead.
+     * Initializes the CBNetController and it's weight-tree and makes a call for it's
+     * parent constructor. If an edgeList is provided the tree topology follow the specified
+     * one. If the edge list can't build an BST, the constructor builds a balanced BST instead.
      * @param numNodes      Number of nodes in the network
      * @param switchSize    Number of input/output ports in the switch
      * @param netNodes      Array with the initialized NetworkNodes
