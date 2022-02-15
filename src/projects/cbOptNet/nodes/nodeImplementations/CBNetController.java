@@ -16,14 +16,36 @@ import sinalgo.nodes.messages.Inbox;
 import sinalgo.nodes.messages.Message;
 import sinalgo.tools.Tools;
 
+/**
+ * The CBNetController implements the remaining abstract methods left by the NetworkControllers
+ * it's constructor calls it's parent class constructor. This layer manages the management of the
+ * node weight and counter, and uses as an extra check before performing a rotation.
+ * This class implements the blunt of the CBNet algortithm over the OpticalNet framework.
+ */
 public class CBNetController extends NetworkController {
     private boolean seq = true;
     private double epsilon = -1.5;
 
+    /**
+     * Initializes the CBNetController and makes a call for it's parent constructor.
+     * This constructor builds the network as a balanced BST.
+     * @param numNodes      Number of nodes in the network
+     * @param switchSize    Number of input/output ports in the switch
+     * @param netNodes      Array with the initialized NetworkNodes
+     */
     public CBNetController (int numNodes, int switchSize, ArrayList<NetworkNode> netNodes) {
         super(numNodes, switchSize, netNodes);
     }
 
+    /**
+     * Initializes the CBNetController and makes a call for it's parent constructor. If an
+     * edgeList is provided the tree topology follow the specified one. If the edge list
+     * can't build an BST, the constructor builds a balanced BST instead.
+     * @param numNodes      Number of nodes in the network
+     * @param switchSize    Number of input/output ports in the switch
+     * @param netNodes      Array with the initialized NetworkNodes
+     * @param edgeList      Array with the network edges, if provided.
+     */
     public CBNetController (
         int numNodes, int switchSize, ArrayList<NetworkNode> netNodes, ArrayList<Integer> edgeList
     ) {
@@ -37,6 +59,11 @@ public class CBNetController extends NetworkController {
 
     /* Rotations */
 
+    /**
+     * {@inheritDoc} Specific to the CBNet Controller, this method first checks if the new
+     * edges disposition changes the network potential enough to justify the rotation, only
+     * performing it if the change is bigger than the predefined epsilon.
+     */
     @Override
     protected boolean zigZigBottomUp (InfraNode x) {
         InfraNode y = x.getParent();
@@ -56,6 +83,11 @@ public class CBNetController extends NetworkController {
         return false;
     }
 
+    /**
+     * {@inheritDoc} Specific to the CBNet Controller, this method first checks if the new
+     * edges disposition changes the network potential enough to justify the rotation, only
+     * performing it if the change is bigger than the predefined epsilon.
+     */
     @Override
     protected boolean zigZagBottomUp (InfraNode x) {
         InfraNode y = x.getParent();
@@ -76,6 +108,11 @@ public class CBNetController extends NetworkController {
         return false;
     }
 
+    /**
+     * {@inheritDoc} Specific to the CBNet Controller, this method first checks if the new
+     * edges disposition changes the network potential enough to justify the rotation, only
+     * performing it if the change is bigger than the predefined epsilon.
+     */
     @Override
     protected boolean zigZigLeftTopDown (InfraNode z) {
         InfraNode y = z.getLeftChild();
@@ -92,6 +129,11 @@ public class CBNetController extends NetworkController {
         return false;
     }
 
+    /**
+     * {@inheritDoc} Specific to the CBNet Controller, this method first checks if the new
+     * edges disposition changes the network potential enough to justify the rotation, only
+     * performing it if the change is bigger than the predefined epsilon.
+     */
     @Override
     protected boolean zigZigRightTopDown (InfraNode z) {
         InfraNode y = z.getRightChild();
@@ -108,6 +150,11 @@ public class CBNetController extends NetworkController {
         return false;
     }
 
+    /**
+     * {@inheritDoc} Specific to the CBNet Controller, this method first checks if the new
+     * edges disposition changes the network potential enough to justify the rotation, only
+     * performing it if the change is bigger than the predefined epsilon.
+     */
     @Override
     protected boolean zigZagLeftTopDown (InfraNode z) {
         InfraNode y = z.getLeftChild();
@@ -126,6 +173,11 @@ public class CBNetController extends NetworkController {
         return false;
     }
 
+    /**
+     * {@inheritDoc} Specific to the CBNet Controller, this method first checks if the new
+     * edges disposition changes the network potential enough to justify the rotation, only
+     * performing it if the change is bigger than the predefined epsilon.
+     */
     @Override
     protected boolean zigZagRightTopDown (InfraNode z) {
         InfraNode y = z.getRightChild();
@@ -144,6 +196,14 @@ public class CBNetController extends NetworkController {
         return false;
     }
 
+    /**
+     * This function updates the the weigth of the y and z's subtree, after one
+     * zig-zig rotation. Recalculating y's weigth with z as it's child, and z's
+     * weigth with c as it's child
+     * @param y initial parent of the x node in zig-zig rotation
+     * @param z initial parent of the y node in zig-zig rotation
+     * @param c initial child of x in zig-zig operation
+     */
     private void zigZigWeightUpdate (InfraNode y, InfraNode z, InfraNode c) {
         long yOldWeight = y.getWeight();
         long zOldWeight = z.getWeight();
@@ -158,6 +218,17 @@ public class CBNetController extends NetworkController {
 
     }
 
+    /**
+     * This function updates the the weigth of the x, y and z's subtree, after one
+     * zig-zag rotation. Recalculating y's weigth with b as it's child in the place of x,
+     * and z's weigth with c as it's child in the place of y, and x as the parent of both
+     * y and z.
+     * @param x reference node in zig-zag rotation
+     * @param y initial parent of the x node in zig-zag rotation
+     * @param z initial parent of the y node in zig-zag rotation
+     * @param b initial child of x in zig-zag operation
+     * @param c initial child of x in zig-zag operation
+     */
     private void zigZagWeightUpdate (
         InfraNode x, InfraNode y, InfraNode z, InfraNode b, InfraNode c
     ) {
@@ -180,10 +251,23 @@ public class CBNetController extends NetworkController {
     /* End of Rotations */
 
     /* Private Getters */
+
+    /**
+     * Util function used to get the log2 of a value
+     * @param value long integer value
+     * @return      the log base 2 of this value
+     */
     private double log2 (long value) {
         return (value == 0 ? 0 : Math.log(value) / Math.log(2));
     }
 
+    /**
+     * Compute the difference in rank between the current network topology
+     * and the network topology after realizing a zig-zig rotation
+     * @param x     the reference node
+     * @param y     x parent node
+     * @return      (double) the difference in rank
+     */
     private double zigDiffRank (InfraNode x, InfraNode y) {
         boolean leftZig = (x == y.getLeftChild());
 
@@ -207,6 +291,14 @@ public class CBNetController extends NetworkController {
         return deltaRank;
     }
 
+    /**
+     * Compute the difference in rank between the current network topology
+     * and the network topology after realizing a zig-zag rotation
+     * @param x     the reference node
+     * @param y     x parent node
+     * @param z     y parent node
+     * @return      (double) the difference in rank
+     */
     private double zigZagDiffRank (InfraNode x, InfraNode y, InfraNode z) {
         boolean lefZigZag = (y == z.getLeftChild());
 
@@ -236,6 +328,13 @@ public class CBNetController extends NetworkController {
         return deltaRank;
     }
 
+    /**
+     * Getter for the rotation a node should perfomed to rout a message to the destination node.
+     * if the message is at one hop away to it's destination or to the LCA between the src node
+     * and the dst node the message is simply routed one time. Else, it returns the appropriated
+     * rotation based on the direction the message needs to be routed and the network topology
+     * surrounding the involved nodes.
+     */
     @Override
     protected Rotation getRotationToPerform (InfraNode x, InfraNode dstNode) {
         Direction direction = x.getRoutingDirection(dstNode);
@@ -328,13 +427,30 @@ public class CBNetController extends NetworkController {
         return null;
     }
 
-    private void incrementPathWeight (int from, int to) {
-        InfraNode fromNode = this.getInfraNode(from);
-        InfraNode toNode = this.getInfraNode(to);
+    /**
+     * Increments the weigth over the path between the src and dst node. Even though this
+     * method is only called when the message reaches is destination, the weight updates after
+     * rotations make it so that the path, even if it's altered ends up with the same distribution
+     * of weigths as it would have if it wasn't altered.
+     * @param src   src node of the message
+     * @param dst   dst node of the message
+     */
+    private void incrementPathWeight (int src, int dst) {
+        InfraNode srcNode = this.getInfraNode(src);
+        InfraNode dstNode = this.getInfraNode(dst);
 
-        fromNode.incrementPathWeight(toNode, false);
+        srcNode.incrementPathWeight(dstNode, false);
     }
 
+    /**
+     * This method handles the message a CBNetCOntroller receives. If it is a OpticalNetMessage,
+     * it means that this message has reached it's destination, so the number of completed
+     * messages is incremented, the LoggerLayer reports this message information and the weigth
+     * in the path between the src and destination node is updated. If it is a NewMessage the
+     * number of received messages is incremented. If it is a HasMessage, the sender node is
+     * marked as a nodeWithMessage for the controllerStep. If it is a RoutingInfoMessage, the
+     * sender node is marked as a routerNode.
+     */
     @Override
     public void handleMessages (Inbox inbox) {
         while (inbox.hasNext()) {
@@ -366,10 +482,17 @@ public class CBNetController extends NetworkController {
         }
     }
 
+    /**
+     * Getter for the seq flag.
+     * @return  True if there is a message in the network false if there isn't
+     */
     public boolean getSeq () {
         return this.seq;
     }
 
+    /**
+     * Sets the seq flag as false, called when a message reaches it's destination
+     */
     public void setSeq () {
         this.seq = false;
     }
