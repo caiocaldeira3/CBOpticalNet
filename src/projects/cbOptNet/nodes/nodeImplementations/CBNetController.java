@@ -334,6 +334,9 @@ public class CBNetController extends NetworkController {
      * and the dst node the message is simply routed one time. Else, it returns the appropriated
      * rotation based on the direction the message needs to be routed and the network topology
      * surrounding the involved nodes.
+     * @param x         InfraNode with the message
+     * @param dstNode   destination InfraNode
+     * @return          the decided rotation
      */
     @Override
     protected Rotation getRotationToPerform (InfraNode x, InfraNode dstNode) {
