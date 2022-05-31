@@ -35,6 +35,7 @@ public class CBNetController extends NetworkController {
      */
     public CBNetController (int numNodes, int switchSize, ArrayList<NetworkNode> netNodes) {
         super(numNodes, switchSize, netNodes);
+        this.projectName = "cbOptNet";
     }
 
     /**
@@ -50,6 +51,7 @@ public class CBNetController extends NetworkController {
         int numNodes, int switchSize, ArrayList<NetworkNode> netNodes, ArrayList<Integer> edgeList
     ) {
         super(numNodes, switchSize, netNodes, edgeList);
+        this.projectName = "cbOptNet";
     }
 
     @Override
