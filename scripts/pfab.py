@@ -24,8 +24,8 @@ projects = [ "cbOptNet" ]
 
 # parameters of simulation
 num_nodes = [ 144 ]
-switch_sizes = [ 16, 32, 64, 128, -1 ]
-datasets = ["trace_0_1", "trace_0_5", "trace_0_8"]
+switch_sizes = [ 16, -1 ]
+datasets = [ "trace_0_5", "trace_0_8"]
 sequential = [ "false" ]
 mus = [ 4 ]
 
