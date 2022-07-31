@@ -25,7 +25,7 @@ projects = [ "cbOptNet" ]
 # parameters of simulation
 num_nodes = [ 367 ]
 datasets = [ "datasetC_pairs" ]
-switch_sizes = [ 16, 32, 64, -1 ]
+switch_sizes = [ 16, -1 ]
 sequential = [ "false" ]
 mus = [ 4 ]
 

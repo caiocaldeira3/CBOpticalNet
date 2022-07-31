@@ -23,8 +23,8 @@ file_lock = threading.Lock()
 projects = [ "cbOptNet" ]
 
 # parameters of simulation
-num_nodes = [ 128, 256, 512, 1024 ]
-switch_sizes = [ 16, 32, 64, 128, 256, -1 ]
+num_nodes = [ 128 ]
+switch_sizes = [ 16 ]
 sequential = [ "false" ]
 mus = [ 4 ]
 num_simulations = 30
