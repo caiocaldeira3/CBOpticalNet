@@ -2,15 +2,15 @@ package projects.cbOptNet.nodes.nodeImplementations;
 
 import java.util.ArrayList;
 
-import projects.opticalNet.nodes.messages.HasMessage;
-import projects.opticalNet.nodes.messages.NewMessage;
-import projects.opticalNet.nodes.messages.OpticalNetMessage;
-import projects.opticalNet.nodes.messages.RoutingInfoMessage;
-import projects.opticalNet.nodes.models.Direction;
-import projects.opticalNet.nodes.models.InfraNode;
-import projects.opticalNet.nodes.models.Rotation;
-import projects.opticalNet.nodes.nodeImplementations.NetworkController;
-import projects.opticalNet.nodes.nodeImplementations.NetworkNode;
+import projects.bstOpticalNet.nodes.messages.HasMessage;
+import projects.bstOpticalNet.nodes.messages.NewMessage;
+import projects.bstOpticalNet.nodes.messages.OpticalNetMessage;
+import projects.bstOpticalNet.nodes.messages.RoutingInfoMessage;
+import projects.bstOpticalNet.nodes.models.Direction;
+import projects.bstOpticalNet.nodes.models.InfraNode;
+import projects.bstOpticalNet.nodes.models.Rotation;
+import projects.bstOpticalNet.nodes.nodeImplementations.NetworkController;
+import projects.bstOpticalNet.nodes.nodeImplementations.NetworkNode;
 
 import sinalgo.nodes.messages.Inbox;
 import sinalgo.nodes.messages.Message;
@@ -23,7 +23,6 @@ import sinalgo.tools.Tools;
  * This class implements the blunt of the CBNet algortithm over the OpticalNet framework.
  */
 public class CBNetController extends NetworkController {
-    private boolean seq = true;
     private double epsilon = -1.5;
 
     /**
@@ -33,8 +32,10 @@ public class CBNetController extends NetworkController {
      * @param switchSize    Number of input/output ports in the switch
      * @param netNodes      Array with the initialized NetworkNodes
      */
-    public CBNetController (int numNodes, int switchSize, ArrayList<NetworkNode> netNodes) {
-        super(numNodes, switchSize, netNodes);
+    public CBNetController (
+        int numNodes, int switchSize, ArrayList<NetworkNode> netNodes, boolean mirrored
+    ) {
+        super(numNodes, switchSize, netNodes, mirrored);
         this.projectName = "cbOptNet";
     }
 
@@ -48,9 +49,10 @@ public class CBNetController extends NetworkController {
      * @param edgeList      Array with the network edges, if provided.
      */
     public CBNetController (
-        int numNodes, int switchSize, ArrayList<NetworkNode> netNodes, ArrayList<Integer> edgeList
+        int numNodes, int switchSize, ArrayList<NetworkNode> netNodes,
+        ArrayList<Integer> edgeList, boolean mirrored
     ) {
-        super(numNodes, switchSize, netNodes, edgeList);
+        super(numNodes, switchSize, netNodes, edgeList, mirrored);
         this.projectName = "cbOptNet";
     }
 
@@ -328,108 +330,6 @@ public class CBNetController extends NetworkController {
         double deltaRank = xNewRank + yNewRank + zNewRank - xOldRank - yOldRank - zOldRank;
 
         return deltaRank;
-    }
-
-    /**
-     * Getter for the rotation a node should perfomed to rout a message to the destination node.
-     * if the message is at one hop away to it's destination or to the LCA between the src node
-     * and the dst node the message is simply routed one time. Else, it returns the appropriated
-     * rotation based on the direction the message needs to be routed and the network topology
-     * surrounding the involved nodes.
-     * @param x         InfraNode with the message
-     * @param dstNode   destination InfraNode
-     * @return          the decided rotation
-     */
-    @Override
-    protected Rotation getRotationToPerform (InfraNode x, InfraNode dstNode) {
-        Direction direction = x.getRoutingDirection(dstNode);
-
-        if (direction == Direction.PARENTROUT) {
-            return Rotation.NULL;
-
-        } else if (direction == Direction.LEFTROUT) {
-            return Rotation.NULL;
-
-        } else if (direction == Direction.RIGHTROUT) {
-            return Rotation.NULL;
-
-        } else if (
-            direction == Direction.PARENT &&
-            !(this.isValidNode(x.getParent()) && this.isValidNode(x.getParent().getParent()))
-        ) {
-            return Rotation.NULL;
-
-        }
-
-        /*bottom-up - BEGIN*/
-        if (direction == Direction.PARENT) {
-            InfraNode y = x.getParent();
-            InfraNode z = y.getParent();
-            if (
-                this.isValidNode(y.getLeftChild()) && x == y.getLeftChild() &&
-                this.isValidNode(z.getLeftChild()) && y == z.getLeftChild()
-            ) {
-                return Rotation.ZIGZIGLEFT_BOTTOMUP;
-
-            } else if (
-                this.isValidNode(y.getRightChild()) && x == y.getRightChild() &&
-                this.isValidNode(z.getRightChild()) && y == z.getRightChild()
-            ) {
-                return Rotation.ZIGZIGRIGHT_BOTTOMUP;
-
-            } else if (
-                this.isValidNode(y.getRightChild()) && x == y.getRightChild() &&
-                this.isValidNode(z.getLeftChild()) && y == z.getLeftChild()
-            ) {
-                return Rotation.ZIGZAGLEFT_BOTTOMUP;
-
-            } else if (
-                this.isValidNode(y.getLeftChild()) && x == y.getLeftChild() &&
-                this.isValidNode(z.getRightChild()) && y == z.getRightChild()
-            ) {
-                return Rotation.ZIGZAGRIGHT_BOTTOMUP;
-
-            } else {
-                Tools.fatalError("Network topology for BottomUp not expected");
-
-            }
-
-        /* Top-Down - LEFT - BEGIN */
-        } else if (direction == Direction.LEFT) {
-            InfraNode y = x.getRoutingNode(dstNode);
-            InfraNode z = y.getRoutingNode(dstNode);
-
-            if (x.getLeftChild() == y && y.getLeftChild() == z) {
-                return Rotation.ZIGZIGLEFT_TOPDOWN;
-
-            } else if (x.getLeftChild() == y && y.getRightChild() == z) {
-                return Rotation.ZIGZAGLEFT_TOPDOWN;
-
-            } else {
-                Tools.fatalError("Network topology for Left TopDown not expected");
-
-            }
-
-        /* Top-Down - RIGHT - BEGIN */
-        } else if (direction == Direction.RIGHT) {
-            InfraNode y = x.getRoutingNode(dstNode);
-            InfraNode z = y.getRoutingNode(dstNode);
-
-            if (x.getRightChild() == y && y.getRightChild() == z) {
-                return Rotation.ZIGZIGRIGHT_TOPDOWN;
-
-            } else if (x.getRightChild() == y && y.getLeftChild() == z) {
-                return Rotation.ZIGZAGRIGHT_TOPDOWN;
-
-            } else {
-                Tools.fatalError("Network topology for Right TopDown not expected");
-
-            }
-        }
-
-        Tools.fatalError("Unexpected rotation");
-
-        return null;
     }
 
     /**
