@@ -239,7 +239,7 @@
         <!--*****************************************************-->
         <input value = "input/tor_128.txt" />
         <output value = "test" />
-        <switchSize value = "256" />
+        <switchSize value = "128" />
         <isSequential value = "true" />
         <seedId value = "10" />
         <mu value = "20" />
