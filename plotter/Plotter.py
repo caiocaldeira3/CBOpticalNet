@@ -1,13 +1,46 @@
-import matplotlib.pyplot as plt
 import dataclasses as dc
-import numpy as np
 
+import matplotlib.pyplot as plt
+import numpy as np
 import statsmodels.api as sm
+from DataReader import DataReader
 
 plt.style.use(["science","ieee"])
 
 @dc.dataclass()
 class Plotter:
+    def total_work (
+        plot_data: list[DataReader], normalize: int = 1, ax: plt.axes = None
+    ) -> None:
+        project_names = []
+        routing_means = []
+        alteration_means = []
+        work_stds = []
+
+        for data in plot_data:
+            project = "CBN" if data.project == "cbOptNet" else "DSN"
+            mirror_name = (data.mirrored if data.mirrored == "mirrored" else "augpath")
+            dataset = data.dataset.split("-")[0]
+            project_name = f"{project}--{dataset}--{mirror_name}"
+
+            total_routing, total_alteration, total_work = data.read_operations()
+
+            project_names.append(project_name)
+            routing_means.append(total_routing.mean() / normalize)
+            alteration_means.append(total_alteration.mean() / normalize)
+            work_stds.append((total_work / normalize).std())
+
+        if ax is None:
+            fig, ax = plt.subplots(figsize=(8, 4))
+            ax.legend(loc="right")
+            ax.set_title("Total Work")
+            ax.set_xlabel("Project")
+            ax.set_ylabel("Work * 10 ^ 4")
+
+        ax.bar(project_names, routing_means, label="routing", color=["silver"])
+        ax.bar(project_names, alteration_means, yerr=work_stds, bottom=routing_means, label="alterations",  color=["grey"])
+        ax.legend(loc="best")
+
     def cdf_active_switches (cdf_array: np.ndarray, ax: plt.axes = None) -> None:
         ecdf = sm.distributions.empirical_distribution.ECDF(cdf_array)
 
@@ -15,7 +48,7 @@ class Plotter:
             fig, ax = plt.subplots(figsize=(8, 4))
             ax.legend(loc="right")
             ax.set_title("CDF Switches ativos por mais que (x) rounds")
-            ax.set_xlabel("Rounds x 10^4")
+            ax.set_xlabel("Rounds x 10**4")
             ax.set_ylabel("Porcentagem dos switches ativos")
 
         min_indx = max(min(cdf_array - 0.1), 0)

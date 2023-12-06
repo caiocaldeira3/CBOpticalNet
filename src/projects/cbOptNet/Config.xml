@@ -240,11 +240,11 @@
         <input value = "input/tor_128.txt" />
         <output value = "test" />
         <switchSize value = "128" />
-        <isSequential value = "true" />
+        <isSequential value = "false" />
         <seedId value = "10" />
         <mu value = "20" />
 
         <ExitAfter value="false" rounds="10000000"/>
-        <AutoStart value="false"/>												</Custom>
+        <AutoStart value="false"/>													</Custom>
 </Document>
 

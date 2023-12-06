@@ -69,7 +69,7 @@ public class CBNetController extends NetworkController {
      * performing it if the change is bigger than the predefined epsilon.
      */
     @Override
-    protected boolean zigZigBottomUp (InfraNode x) {
+    protected boolean semiZigZigBottomUp (InfraNode x) {
         InfraNode y = x.getParent();
         InfraNode z = y.getParent();
 
@@ -78,7 +78,7 @@ public class CBNetController extends NetworkController {
 
         double deltaRank = this.zigDiffRank(y, z);
 
-        if (deltaRank < this.epsilon && super.zigZigBottomUp(x)) {
+        if (deltaRank < this.epsilon && super.semiZigZigBottomUp(x)) {
             this.zigZigWeightUpdate(y, z, c);
 
             return true;
@@ -118,13 +118,13 @@ public class CBNetController extends NetworkController {
      * performing it if the change is bigger than the predefined epsilon.
      */
     @Override
-    protected boolean zigZigLeftTopDown (InfraNode z) {
+    protected boolean semiZigZigLeftTopDown (InfraNode z) {
         InfraNode y = z.getLeftChild();
         InfraNode c = y.getRightChild();
 
         double deltaRank = this.zigDiffRank(y, z);
 
-        if (deltaRank < this.epsilon && super.zigZigLeftTopDown(z)) {
+        if (deltaRank < this.epsilon && super.semiZigZigLeftTopDown(z)) {
             this.zigZigWeightUpdate(y, z, c);
 
             return true;
@@ -139,13 +139,13 @@ public class CBNetController extends NetworkController {
      * performing it if the change is bigger than the predefined epsilon.
      */
     @Override
-    protected boolean zigZigRightTopDown (InfraNode z) {
+    protected boolean semiZigZigRightTopDown (InfraNode z) {
         InfraNode y = z.getRightChild();
         InfraNode c = y.getLeftChild();
 
         double deltaRank = this.zigDiffRank(y, z);
 
-        if (deltaRank < this.epsilon && super.zigZigRightTopDown(z)) {
+        if (deltaRank < this.epsilon && super.semiZigZigRightTopDown(z)) {
             this.zigZigWeightUpdate(y, z, c);
 
             return true;
