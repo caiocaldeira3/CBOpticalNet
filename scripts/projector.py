@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 import os
-import numpy
 import threading
 
+import numpy
 from util import check_sim
 
 # this file keep all completed experiments
@@ -14,13 +14,13 @@ if not os.path.exists(log_path):
 
 # read log file
 open(os.path.join(log_path, log_file), 'a').close()
-log = set(line.rstrip() for line in open(os.path.join(log_path, log_file), 'r'))
+log = {line.rstrip() for line in open(os.path.join(log_path, log_file))}
 
 # open log file for append and create a lock variable
 file = open("scripts/logs/projectorLog.txt", "a+")
 file_lock = threading.Lock()
 
-projects = [ "cbOptNet" ]
+projects = [ "cbOptNet", "semiDisplayOpticNet" ]
 
 # parameters of simulation
 num_nodes = [ 128 ]
@@ -28,6 +28,7 @@ datasets = [ "tor" ]
 switch_sizes = [ 16 ]
 mus = [ 4 ]
 sequential = [ "false" ]
+mirrored = [ "true", "false"]
 num_simulations = 30
 
 #number of threads to simulation
@@ -71,39 +72,40 @@ for project in projects:
             for sim_id in range(1, num_simulations + 1):
                 for switch_size in switch_sizes:
                     for sequentiality in sequential:
-                        for mu in mus:
-                            if switch_size == -1:
-                                switch_size = 2 * num_node
+                        for mirror in mirrored:
+                            for mu in mus:
+                                if switch_size == -1:
+                                    switch_size = 2 * num_node
 
-                            elif switch_size == 256 and num_node == 128:
-                                continue
+                                elif switch_size == 256 and num_node == 128:
+                                    continue
 
-                            elif switch_size <= 16 and num_node >= 256:
-                                continue
+                                elif switch_size <= 16 and num_node >= 256:
+                                    continue
 
-                            elif switch_size <= 64 and num_node >= 512:
-                                continue
+                                elif switch_size <= 64 and num_node >= 512:
+                                    continue
 
+                                mirror_path = "mirrored" if mirror == "true" else "generic"
+                                input_file = (
+                                    f"input/projectorDS/{dataset}/{num_node}/{sim_id}_tor_{num_node}.txt"
+                                )
+                                output_path = (
+                                    f"output/{dataset}/{project}_{num_node}/{switch_size}/{mirror_path}/{mu}/{sim_id}/"
+                                )
+                                sim_stream = f"logs/{output_path}sim.txt"
 
-                            input_file = (
-                                f"input/projectorDS/{dataset}/{num_node}/{sim_id}_tor_{num_node}.txt"
-                            )
-                            output_path = (
-                                f"output/{dataset}/{project}_{num_node}/{switch_size}/{mu}/{sim_id}/"
-                            )
-                            sim_stream = f"logs/{output_path}sim.txt"
+                                if not os.path.exists(f"logs/{output_path}"):
+                                    os.makedirs(f"logs/{output_path}")
 
-                            if not os.path.exists(f"logs/{output_path}"):
-                                os.makedirs(f"logs/{output_path}")
+                                cmd = (
+                                    f"time --verbose {base_cmd} {project} -overwrite input={input_file} " \
+                                    f"switchSize={switch_size} mu={mu} output={output_path} " \
+                                    f"isSequential={sequentiality} mirrored={mirror} AutoStart=true > {sim_stream}"
+                                )
 
-                            cmd = (
-                                f"time --verbose {base_cmd} {project} -overwrite input={input_file} " \
-                                f"switchSize={switch_size} mu={mu} output={output_path} " \
-                                f"isSequential={sequentiality} AutoStart=true > {sim_stream}"
-                            )
-
-                            print(cmd)
-                            commands.append(cmd)
+                                print(cmd)
+                                commands.append(cmd)
 
     num_commands = len(commands)
 

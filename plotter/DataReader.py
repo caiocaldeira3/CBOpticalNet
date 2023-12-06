@@ -1,8 +1,9 @@
 import dataclasses as dc
-import pandas as pd
-import numpy as np
-
 from pathlib import Path
+
+import numpy as np
+import pandas as pd
+
 
 @dc.dataclass(init=True)
 class DataReader:
@@ -10,6 +11,7 @@ class DataReader:
     project: str = dc.field(init=True)
     num_nodes: int = dc.field(init=True)
     switch_size: int = dc.field(init=True)
+    mirrored: str = dc.field(init=True)
     num_sims: int = dc.field(init=True)
     mu: int = dc.field(init=True, default=None)
     switch_ports: int = dc.field(init=False)
@@ -51,7 +53,7 @@ class DataReader:
     def file_path (self) -> Path:
         return Path(
             Path(__file__).parent.parent /
-            f"logs/output/{self.dataset}/{self.project}_{self.num_nodes}/{self.switch_size}/{self.mu}/"
+            f"logs/output/{self.dataset}/{self.project}_{self.num_nodes}/{self.switch_size}/{self.mirrored}/{self.mu}/"
         )
 
     def cdf_active_switches (self) -> np.ndarray:
