@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import os
 import threading
 
@@ -20,7 +19,8 @@ log = {line.rstrip() for line in open(os.path.join(log_path, log_file))}
 file = open("scripts/logs/projectorLog.txt", "a+")
 file_lock = threading.Lock()
 
-projects = [ "cbOptNet", "semiDisplayOpticNet" ]
+# projects = [ "displayOpticNet", "cbOptNet", "semiDisplayOpticNet" ]
+projects = [ "cbOptNet" ]
 
 # parameters of simulation
 num_nodes = [ 128 ]

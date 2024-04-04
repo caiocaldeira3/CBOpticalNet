@@ -20,14 +20,14 @@ log = {line.rstrip() for line in open(os.path.join(log_path, log_file))}
 file = open("scripts/logs/facebookLog.txt", "a+")
 file_lock = threading.Lock()
 
-projects = [ "cbOptNet", "semiDisplayOpticNet" ]
+projects = [ "cbOptNet", "semiDisplayOpticNet", "displayOpticNet" ]
 
 # parameters of simulation
 num_nodes = [ 367 ]
 datasets = [ "datasetC_pairs" ]
 switch_sizes = [ 16 ]
 sequential = [ "false" ]
-mirrored = [ "true", "false"]
+mirrored = [ "true", "false" ]
 mus = [ 4 ]
 
 #number of threads to simulation

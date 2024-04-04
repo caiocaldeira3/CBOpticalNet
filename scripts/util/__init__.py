@@ -7,10 +7,10 @@ if not os.path.exists(log_path):
     os.makedirs(log_path)
 
 # open log file for append
-failedLog = open(f"{log_path}{log_file}", "a")
+failed_log = open(f"{log_path}{log_file}", "a")
 
 def check_sim (sim_path: str) -> bool:
-    with open(sim_path, "r") as f:
+    with open(sim_path) as f:
         if "rotation" in f.read():
             return True
 
@@ -23,7 +23,7 @@ def ensure_simulations () -> None:
                 os.remove(f"{subdir}/sim.txt")
 
             else:
-                failedLog.write(f"Failed simulation at {subdir}")
+                failed_log.write(f"Failed simulation at {subdir}")
 
 if __name__ == "__main__":
     ensure_simulations()

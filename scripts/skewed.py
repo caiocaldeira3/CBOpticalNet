@@ -20,7 +20,7 @@ log = {line.rstrip() for line in open(os.path.join(log_path, log_file))}
 file = open("scripts/logs/skewedLog.txt", "a+")
 file_lock = threading.Lock()
 
-projects = [ "cbOptNet", "semiDisplayOpticNet" ]
+projects = [ "cbOptNet" ]
 
 # parameters of simulation
 num_nodes = [ 128 ]
