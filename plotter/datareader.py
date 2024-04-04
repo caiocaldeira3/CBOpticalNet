@@ -142,20 +142,38 @@ class DataReader:
 
         return cdf
 
-    def read_operations (self) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    def read_operations (self) -> tuple[
+        np.ndarray, np.ndarray, np.ndarray, np.ndarray
+    ]:
         total_routing = np.empty(self.num_sims)
-        total_alterations = np.empty(self.num_sims)
+        total_link_alterations = np.empty(self.num_sims)
+        total_swt_alterations = np.empty(self.num_sims)
+        total_rotations = np.empty(self.num_sims)
 
         for sim_id in range(1, self.num_sims + 1):
             file_df = pd.read_csv(self.file_path / f"{sim_id}/operations.csv")
 
-            total_routing[sim_id - 1] = file_df.loc[file_df.name=="message-routing", "sum"].item()
-            total_alterations[sim_id - 1] = file_df.loc[file_df.name=="alteration", "sum"].item()
+            total_routing[sim_id - 1] = file_df.loc[
+                file_df.name == "message-routing", "sum"
+            ].item()
 
-        total_work = total_routing + total_alterations
+            total_swt_alterations[sim_id - 1] = file_df.loc[
+                file_df.name == "swt-alteration", "sum"
+            ].item()
+
+            total_link_alterations[sim_id - 1] = file_df.loc[
+                file_df.name == "link-alteration", "sum"
+            ].item()
+
+            total_rotations[sim_id - 1] = file_df.loc[
+                file_df.name == "rotation", "sum"
+            ].item()
 
         print(f"finish reading {self.num_nodes}|{self.switch_size}")
-        return total_routing, total_alterations, total_work
+        return (
+            total_routing, total_link_alterations,
+            total_swt_alterations, total_rotations
+        )
 
     def read_throughput (self) -> np.ndarray:
         raw = np.zeros((self.num_sims, self.max_rounds), dtype=np.ndarray)
